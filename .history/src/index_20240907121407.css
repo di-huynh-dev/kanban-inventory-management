@@ -16,3 +16,10 @@ code {
   align-items: center;
   display: flex;
 }
+
+.content-right {
+  height: 100vh;
+  justify-content: right;
+  align-items: right;
+  display: flex;
+}
