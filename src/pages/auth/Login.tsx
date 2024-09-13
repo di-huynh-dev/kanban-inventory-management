@@ -1,9 +1,13 @@
 import type { FormProps } from 'antd'
-import { Button, Card, Checkbox, Form, Input, Space, Typography } from 'antd'
+import { Button, Card, Checkbox, Form, Input, message, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SocialLogin from './components/SocialLogin'
-import { appInfo } from '../../constants/appInfo'
+import { appInfo, localDataNames } from '../../constants/appInfo'
+import handleApis from '../apis/handleApis'
+import { toast } from 'react-toastify'
+import { useDispatch } from 'react-redux'
+import { addAuth } from '../../redux/reducers/auth.reducer'
 
 type FieldType = {
   email?: string
@@ -16,9 +20,24 @@ const { Title, Paragraph, Text } = Typography
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isRemember, setIsRemember] = useState(false)
+  const dispatch = useDispatch()
 
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values)
+  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+    try {
+      const resp: any = await handleApis('/auth/login', values, 'post')
+
+      if (resp.data) {
+        dispatch(addAuth(resp.data.metadata))
+        toast.success(resp.data.message)
+        if (isRemember) {
+          localStorage.setItem(localDataNames.authData, JSON.stringify(resp.data.metadata))
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -69,7 +88,7 @@ const LoginPage = () => {
             </Button>
           </Form.Item>
         </Form>
-        <SocialLogin />
+        <SocialLogin isRemember={isRemember} />
         <div className="mt-3 text-center">
           <Space>
             <Text>Don't have an acount? </Text>

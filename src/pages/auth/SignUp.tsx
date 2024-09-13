@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SocialLogin from './components/SocialLogin'
 import { appInfo } from '../../constants/appInfo'
+import { toast } from 'react-toastify'
+import handleApis from '../apis/handleApis'
 
 type FieldType = {
   name: string
@@ -16,10 +18,19 @@ const { Title, Paragraph, Text } = Typography
 
 const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const [isRemember, setIsRemember] = useState(false)
 
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values)
+  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+    try {
+      setIsLoading(true)
+      const resp: any = await handleApis('/auth/register', values, 'post')
+      if (resp.data) {
+        toast.success(resp.data.message)
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
